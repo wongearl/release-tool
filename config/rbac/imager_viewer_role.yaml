@@ -1,0 +1,27 @@
+# permissions for end users to view imagers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: imager-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: release-tool
+    app.kubernetes.io/part-of: release-tool
+    app.kubernetes.io/managed-by: kustomize
+  name: imager-viewer-role
+rules:
+- apiGroups:
+  - devops.release.io
+  resources:
+  - imagers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - devops.release.io
+  resources:
+  - imagers/status
+  verbs:
+  - get

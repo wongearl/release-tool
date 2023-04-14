@@ -1,0 +1,12 @@
+apiVersion: devops.release.io/v1
+kind: Releaser
+metadata:
+  labels:
+    app.kubernetes.io/name: releaser
+    app.kubernetes.io/instance: releaser-sample
+    app.kubernetes.io/part-of: release-tool
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: release-tool
+  name: releaser-sample
+spec:
+  # TODO(user): Add fields here
