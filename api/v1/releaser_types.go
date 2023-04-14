@@ -17,6 +17,9 @@ limitations under the License.
 package v1
 
 import (
+	"strings"
+
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,15 +31,138 @@ type ReleaserSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of Releaser. Edit releaser_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Phase is the stage of a release request
+	Phase        Phase              `json:"phase,omitempty"`
+	Version      string             `json:"version,omitempty"`
+	Repositories []Repository       `json:"repositories,omitempty"`
+	GitOps       *GitOps            `json:"gitOps,omitempty"`
+	Secret       v1.SecretReference `json:"secret,omitempty"`
 }
+
+// Phase is the stage of release request
+type Phase string
+
+const (
+	// PhaseDraft allows user to modify
+	PhaseDraft Phase = "draft"
+	// PhaseReady indicates this request is ready to release
+	PhaseReady Phase = "ready"
+	// PhaseDone indicates this request was done
+	PhaseDone Phase = "done"
+)
+
+// IsValid checks if this is valid
+func (p Phase) IsValid() bool {
+	switch p {
+	case PhaseDraft, PhaseReady, PhaseDone:
+		return true
+	default:
+		return false
+	}
+}
+
+// Repository represents a git repository
+type Repository struct {
+	// +optional
+	Name string `json:"name"`
+	// +optional
+	Provider Provider `json:"provider,omitempty"`
+	Address  string   `json:"address"`
+	// +optional
+	Branch string `json:"branch,omitempty"`
+	// +optional
+	Version string `json:"version,omitempty"`
+	// +optional
+	Message string `json:"message,omitempty"`
+	// +optional
+	Action Action `json:"action,omitempty"`
+}
+
+// GetDefaultProvider returns the default git provider
+func GetDefaultProvider(r *Repository) Provider {
+	if r.Provider != "" {
+		return r.Provider
+	}
+
+	address := r.Address
+	if strings.HasPrefix(address, "https://github.com/") {
+		return ProviderGitHub
+	} else if strings.HasPrefix(address, "https://gitlab.com/") {
+		return ProviderGitlab
+	} else if strings.HasPrefix(address, "https://bitbucket.org/") {
+		return ProviderBitbucket
+	} else if strings.HasPrefix(address, "https://gitee.com/") {
+		return ProviderGitee
+	} else if strings.HasPrefix(address, "https://gitea.com/") {
+		return ProviderGitea
+	} else if address != "" {
+		return ProviderUnknown
+	}
+	return ""
+}
+
+// GitOps indicates to integrate with GitOps
+type GitOps struct {
+	Enable     bool               `json:"enable,omitempty"`
+	Repository Repository         `json:"repository,omitempty"`
+	Secret     v1.SecretReference `json:"secret,omitempty"`
+}
+
+// Provider represents a git provider, such as: GitHub, Gitlab
+type Provider string
+
+const (
+	ProviderGitHub    Provider = "github"
+	ProviderGitlab    Provider = "gitlab"
+	ProviderBitbucket Provider = "bitbucket"
+	ProviderGitee     Provider = "gitee"
+	ProviderGitea     Provider = "gitea"
+	ProviderUnknown   Provider = "unknown"
+)
+
+// Action indicates the action once the request phase to be ready
+type Action string
+
+const (
+	ActionAuto       Action = "auto"
+	ActionTag        Action = "tag"
+	ActionPreRelease Action = "pre-release"
+	ActionRelease    Action = "release"
+)
 
 // ReleaserStatus defines the observed state of Releaser
 type ReleaserStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	// +optional
+	StartTime *metav1.Time `json:"startTime,omitempty"`
+	// +optional
+	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
+	Conditions     []Condition  `json:"conditions,omitempty"`
 }
+
+// Condition indicates the status of each git repositories
+type Condition struct {
+	ConditionType ConditionType   `json:"conditionType"`
+	Status        ConditionStatus `json:"status"`
+	Message       string          `json:"message"`
+}
+
+// ConditionType is the type of condition
+type ConditionType string
+
+const (
+	ConditionTypeRelease ConditionType = "release"
+	ConditionTypeOther   ConditionType = "other"
+)
+
+// ConditionStatus is the status of a condition
+type ConditionStatus string
+
+const (
+	ConditionStatusSuccess ConditionStatus = "success"
+	ConditionStatusFailed  ConditionStatus = "failed"
+)
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status

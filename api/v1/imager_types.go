@@ -27,15 +27,32 @@ import (
 type ImagerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of Imager. Edit imager_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	RepoUrl string `json:"repoUrl"`
+	// +optional
+	RepoRemote          string `json:"repoRemote"`
+	RepoSecretName      string `json:"repoSecretName"`
+	RepoSecretNamespace string `json:"repoSecretNamespace"`
+	// +optional
+	RepoBranch string `json:"repoBranch"`
+	RepoTag    string `json:"repoTag"`
+	// +optional
+	RepoPr                  string   `json:"repoPr"`
+	ImageName               string   `json:"imageName"`
+	DockerfilePath          string   `json:"dockerfilePath"`
+	Registry                string   `json:"registry"`
+	RegistrySecretName      string   `json:"registrySecretName"`
+	RegistrySecretNamespace string   `json:"registrySecretNamespace"`
+	BuildArgs               []string `json:"buildArgs"`
 }
 
 // ImagerStatus defines the observed state of Imager
 type ImagerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	StartTime *metav1.Time `json:"startTime,omitempty"`
+	// +optional
+	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
+	Conditions     []Condition  `json:"conditions,omitempty"`
 }
 
 //+kubebuilder:object:root=true
