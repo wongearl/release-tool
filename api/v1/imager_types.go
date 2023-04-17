@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -29,20 +30,22 @@ type ImagerSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	RepoUrl string `json:"repoUrl"`
 	// +optional
-	RepoRemote          string `json:"repoRemote"`
-	RepoSecretName      string `json:"repoSecretName"`
-	RepoSecretNamespace string `json:"repoSecretNamespace"`
+	RepoRemote string             `json:"repoRemote"`
+	RepoSecret v1.SecretReference `json:"repoSecret"`
 	// +optional
 	RepoBranch string `json:"repoBranch"`
 	RepoTag    string `json:"repoTag"`
 	// +optional
-	RepoPr                  string   `json:"repoPr"`
-	ImageName               string   `json:"imageName"`
-	DockerfilePath          string   `json:"dockerfilePath"`
-	Registry                string   `json:"registry"`
-	RegistrySecretName      string   `json:"registrySecretName"`
-	RegistrySecretNamespace string   `json:"registrySecretNamespace"`
-	BuildArgs               []string `json:"buildArgs"`
+	RepoPr         string             `json:"repoPr"`
+	ImageArgs      []ImageArgs        `json:"imageArgs"`
+	Registry       string             `json:"registry"`
+	RegistrySecret v1.SecretReference `json:"registrySecret"`
+}
+
+type ImageArgs struct {
+	ImageName      string   `json:"imageName"`
+	DockerfilePath string   `json:"dockerfilePath"`
+	BuildArgs      []string `json:"buildArgs"`
 }
 
 // ImagerStatus defines the observed state of Imager

@@ -153,6 +153,7 @@ type ConditionType string
 
 const (
 	ConditionTypeRelease ConditionType = "release"
+	ConditionTypeImage   ConditionType = "image"
 	ConditionTypeOther   ConditionType = "other"
 )
 
